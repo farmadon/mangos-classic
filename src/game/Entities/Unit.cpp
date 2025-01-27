@@ -9332,6 +9332,10 @@ void Unit::SetPower(Powers power, uint32 val)
     if (maxPower < val)
         val = maxPower;
 
+#ifdef ENABLE_MODULES
+    sModuleMgr.OnSetPower(this, power, val);
+#endif
+
     SetStatInt32Value(static_cast<uint16>(UNIT_FIELD_POWER1) + static_cast<uint16>(power), int32(val));
 
     // group update
