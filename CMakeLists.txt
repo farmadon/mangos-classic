@@ -92,23 +92,31 @@ if(BUILD_MODULES)
   # Download module config file
   include(FetchContent)
 
+  # SOURCE_DIR pinned to a pre-populated directory (same pattern the
+  # PlayerBots/per-module blocks already use below) -- without this override,
+  # FetchContent always re-fetches GIT_TAG "main" live on every fresh build
+  # directory, which is exactly the kind of unpinned, non-reproducible fetch
+  # this project builds everything else to avoid. The Dockerfile's source
+  # stage pre-populates src/modules/modules at a pinned commit before cmake
+  # ever runs, so this FetchContent call becomes a no-op confirming what's
+  # already there instead of a live clone.
   FetchContent_Declare(
     modules
+    SOURCE_DIR "${CMAKE_SOURCE_DIR}/src/modules/modules"
     GIT_REPOSITORY "https://github.com/davidonete/cmangos-modules.git"
     GIT_TAG "main"
   )
 
+  FetchContent_GetProperties(modules)
   if(NOT modules_POPULATED)
 	message(STATUS "Fetching module configuration...")
     FetchContent_Populate(modules)
-
-    if(EXISTS ${CMAKE_SOURCE_DIR}/src/modules/modules)
-      file(REMOVE_RECURSE ${CMAKE_SOURCE_DIR}/src/modules/modules)
-    endif()
-
-    file(COPY ${modules_SOURCE_DIR}/. DESTINATION ${CMAKE_SOURCE_DIR}/src/modules/modules)
     message(STATUS "Modules configuration fetched and populated in ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/modules")
+  else()
+    message(STATUS "Module configuration already populated: ${modules_POPULATED}")
+  endif()
 
+  if(EXISTS ${CMAKE_SOURCE_DIR}/src/modules/modules/modules.conf)
     # Read module config file
     file(READ ${CMAKE_SOURCE_DIR}/src/modules/modules/modules.conf MODULE_CONF)
     string(REGEX REPLACE "\n" ";" MODULE_CONF_LINES "${MODULE_CONF}")
