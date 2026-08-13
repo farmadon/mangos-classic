@@ -3651,6 +3651,37 @@ bool ChatHandler::HandleCharacterRenameCommand(char* args)
     return true;
 }
 
+// undo .character rename -- clears the pending at-login flag before the
+// player ever gets the rename prompt, so they keep their current name.
+bool ChatHandler::HandleCharacterCancelRenameCommand(char* args)
+{
+    Player* target;
+    ObjectGuid target_guid;
+    std::string target_name;
+    if (!ExtractPlayerTarget(&args, &target, &target_guid, &target_name))
+        return false;
+
+    if (target)
+    {
+        if (HasLowerSecurity(target))
+            return false;
+
+        target->RemoveAtLoginFlag(AT_LOGIN_RENAME, true);
+        PSendSysMessage("Pending rename cancelled for %s.", GetNameLink(target).c_str());
+    }
+    else
+    {
+        if (HasLowerSecurity(nullptr, target_guid))
+            return false;
+
+        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~1 WHERE guid = '%u'", target_guid.GetCounter());
+        std::string nameLink = playerLink(target_name);
+        PSendSysMessage("Pending rename cancelled for %s.", nameLink.c_str());
+    }
+
+    return true;
+}
+
 bool ChatHandler::HandleCharacterReputationCommand(char* args)
 {
     Player* target;
