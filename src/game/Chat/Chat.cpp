@@ -166,6 +166,7 @@ ChatCommand* ChatHandler::getCommandTable()
         { "level",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleCharacterLevelCommand,      "", nullptr },
         { "rename",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterRenameCommand,     "", nullptr },
         { "reputation",     SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterReputationCommand, "", nullptr },
+        { "xplock",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterXpLockCommand,     "", nullptr },
         { nullptr,          0,                  false, nullptr,                                        "", nullptr }
     };
 

@@ -647,6 +647,7 @@ Player::Player(WorldSession* session): Unit(), m_taxiTracker(*this), m_mover(thi
     m_isDebuggingAreaTriggers = false;
 
     m_fishingSteps = 0;
+    m_xpLocked = false;
 
     m_lastDbGuid = 0;
     m_lastGameObject = false;
@@ -2704,6 +2705,9 @@ void Player::SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 RestXP, float gr
 
 void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 {
+    if (m_xpLocked)
+        return;
+
 #ifdef ENABLE_MODULES
     if (sModuleMgr.OnPreGiveXP(this, xp, victim))
         return;
@@ -14731,6 +14735,7 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
     }
 
     m_fishingSteps = fields[55].GetUInt32();
+    m_xpLocked = fields[56].GetBool();
 
     DEBUG_FILTER_LOG(LOG_FILTER_PLAYER_STATS, "The value of player %s after load item and aura is: ", m_name.c_str());
     outDebugStatsValues();
@@ -15807,7 +15812,7 @@ void Player::SaveToDB()
                               "death_expire_time, taxi_path, "
                               "honor_highest_rank, honor_standing, stored_honor_rating , stored_dishonorable_kills, stored_honorable_kills, "
                               "watchedFaction, drunk, health, power1, power2, power3, "
-                              "power4, power5, exploredZones, equipmentCache, ammoId, actionBars, fishingSteps) "
+                              "power4, power5, exploredZones, equipmentCache, ammoId, actionBars, fishingSteps, xp_locked) "
                               "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,"
                               "?, ?, ?, ?, ?, "
                               "?, ?, ?, "
@@ -15816,7 +15821,7 @@ void Player::SaveToDB()
                               "?, ?, "
                               "?, ?, ?, ?, ?, "
                               "?, ?, ?, ?, ?, ?, "
-                              "?, ?, ?, ?, ?, ?, ?) ");
+                              "?, ?, ?, ?, ?, ?, ?, ?) ");
 
     uberInsert.addUInt32(GetGUIDLow());
     uberInsert.addUInt32(GetSession()->GetAccountId());
@@ -15934,6 +15939,7 @@ void Player::SaveToDB()
     uberInsert.addUInt32(uint32(GetByteValue(PLAYER_FIELD_BYTES, 2)));
 
     uberInsert.addUInt8(m_fishingSteps);
+    uberInsert.addUInt8(m_xpLocked ? 1 : 0);
 
     uberInsert.Execute();
 

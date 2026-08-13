@@ -3669,6 +3669,51 @@ bool ChatHandler::HandleCharacterReputationCommand(char* args)
     return true;
 }
 
+// lock/unlock XP gain for a character, online or offline
+bool ChatHandler::HandleCharacterXpLockCommand(char* args)
+{
+    char* nameStr = ExtractArg(&args);
+    if (!nameStr)
+        return false;
+
+    bool locked;
+    if (!ExtractOnOff(&args, locked))
+    {
+        SendSysMessage(LANG_USE_BOL);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    Player* target;
+    ObjectGuid target_guid;
+    std::string target_name;
+    if (!ExtractPlayerTarget(&nameStr, &target, &target_guid, &target_name))
+        return false;
+
+    if (target)
+    {
+        // check online security
+        if (HasLowerSecurity(target))
+            return false;
+
+        target->SetXpLocked(locked);
+        CharacterDatabase.PExecute("UPDATE characters SET xp_locked = '%u' WHERE guid = '%u'", locked ? 1u : 0u, target->GetGUIDLow());
+        PSendSysMessage(locked ? "XP gain locked for %s." : "XP gain unlocked for %s.", GetNameLink(target).c_str());
+    }
+    else
+    {
+        // check offline security
+        if (HasLowerSecurity(nullptr, target_guid))
+            return false;
+
+        std::string nameLink = playerLink(target_name);
+        CharacterDatabase.PExecute("UPDATE characters SET xp_locked = '%u' WHERE guid = '%u'", locked ? 1u : 0u, target_guid.GetCounter());
+        PSendSysMessage(locked ? "XP gain locked for %s." : "XP gain unlocked for %s.", nameLink.c_str());
+    }
+
+    return true;
+}
+
 // change standstate
 bool ChatHandler::HandleModifyStandStateCommand(char* args)
 {

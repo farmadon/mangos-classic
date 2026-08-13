@@ -2086,6 +2086,9 @@ class Player : public Unit
         bool HasAtLoginFlag(AtLoginFlags f) const { return (m_atLoginFlags & f) != 0; }
         void SetAtLoginFlag(AtLoginFlags f) { m_atLoginFlags |= f; }
         void RemoveAtLoginFlag(AtLoginFlags f, bool in_db_also = false);
+
+        bool IsXpLocked() const { return m_xpLocked; }
+        void SetXpLocked(bool locked) { m_xpLocked = locked; }
         static bool ValidateAppearance(uint8 race, uint8 class_, uint8 gender, uint8 hairID, uint8 hairColor, uint8 faceID, uint8 facialHair, uint8 skinColor, bool create = false);
 
         // Temporarily removed pet cache
@@ -2558,6 +2561,8 @@ class Player : public Unit
         std::map<uint32, ObjectGuid> m_followAngles;
 
         uint8 m_fishingSteps;
+
+        bool m_xpLocked;
 
         std::map<uint32, ItemSetEffect> m_itemSetEffects;
 
