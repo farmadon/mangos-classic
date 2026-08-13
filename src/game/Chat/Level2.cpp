@@ -3699,6 +3699,9 @@ bool ChatHandler::HandleCharacterXpLockCommand(char* args)
         target->SetXpLocked(locked);
         CharacterDatabase.PExecute("UPDATE characters SET xp_locked = '%u' WHERE guid = '%u'", locked ? 1u : 0u, target->GetGUIDLow());
         PSendSysMessage(locked ? "XP gain locked for %s." : "XP gain unlocked for %s.", GetNameLink(target).c_str());
+
+        if (needReportToTarget(target))
+            ChatHandler(target).SendSysMessage(locked ? "Your XP gain has been locked." : "Your XP gain has been unlocked.");
     }
     else
     {

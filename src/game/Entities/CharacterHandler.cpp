@@ -755,6 +755,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     SendExpectedSpamRecords();
     SendMotd(pCurrChar);
 
+    if (pCurrChar->IsXpLocked())
+        ChatHandler(pCurrChar).SendSysMessage("Your XP gain is currently locked.");
+
     SendOfflineNameQueryResponses();
 
     // QueryResult *result = CharacterDatabase.PQuery("SELECT guildid,rank FROM guild_member WHERE guid = '%u'",pCurrChar->GetGUIDLow());
