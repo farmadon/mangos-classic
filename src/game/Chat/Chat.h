@@ -247,6 +247,7 @@ class ChatHandler
         bool HandleCharacterRenameCommand(char* args);
         bool HandleCharacterReputationCommand(char* args);
         bool HandleCharacterXpLockCommand(char* args);
+        bool HandleCharacterSetNameCommand(char* args);
 
         bool HandleChannelListCommand(char* args);
         bool HandleChannelStaticCommand(char* args);

@@ -167,6 +167,7 @@ ChatCommand* ChatHandler::getCommandTable()
         { "rename",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterRenameCommand,     "", nullptr },
         { "reputation",     SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterReputationCommand, "", nullptr },
         { "xplock",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterXpLockCommand,     "", nullptr },
+        { "setname",        SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterSetNameCommand,    "", nullptr },
         { nullptr,          0,                  false, nullptr,                                        "", nullptr }
     };
 

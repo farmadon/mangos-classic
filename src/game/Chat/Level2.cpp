@@ -3717,6 +3717,63 @@ bool ChatHandler::HandleCharacterXpLockCommand(char* args)
     return true;
 }
 
+// set a character's exact name directly -- offline only. A live rename would
+// desync guild roster/friends list/group frames/nameplates cached on every
+// other connected client; .character rename (the at-login flag) is the only
+// safe path for a character that's currently online.
+bool ChatHandler::HandleCharacterSetNameCommand(char* args)
+{
+    char* nameStr = ExtractArg(&args);
+    if (!nameStr)
+        return false;
+
+    char* newNameStr = ExtractArg(&args);
+    if (!newNameStr)
+        return false;
+
+    std::string newName = newNameStr;
+    if (!normalizePlayerName(newName))
+    {
+        PSendSysMessage("Invalid new name.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (ObjectMgr::CheckPlayerName(newName, true) != CHAR_NAME_SUCCESS)
+    {
+        PSendSysMessage("'%s' fails name validation (bad characters or length).", newName.c_str());
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (sObjectMgr.GetPlayerGuidByName(newName))
+    {
+        PSendSysMessage("The name '%s' is already in use.", newName.c_str());
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    Player* target;
+    ObjectGuid target_guid;
+    std::string target_name;
+    if (!ExtractPlayerTarget(&nameStr, &target, &target_guid, &target_name))
+        return false;
+
+    if (target)
+    {
+        PSendSysMessage("%s must be offline to set their name directly -- use .character rename instead.", GetNameLink(target).c_str());
+        return true;
+    }
+
+    if (HasLowerSecurity(nullptr, target_guid))
+        return false;
+
+    CharacterDatabase.PExecute("UPDATE characters SET name = '%s' WHERE guid = '%u'", newName.c_str(), target_guid.GetCounter());
+    PSendSysMessage("Renamed %s to %s.", target_name.c_str(), newName.c_str());
+
+    return true;
+}
+
 // change standstate
 bool ChatHandler::HandleModifyStandStateCommand(char* args)
 {
